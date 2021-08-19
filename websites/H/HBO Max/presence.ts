@@ -12,8 +12,8 @@ const presence = new Presence({
       "#Viewport > div.default > div:nth-child(3) div > span > span > span",
     "series:altname": "#Viewport > div.default div > span > span > span",
     "feature:name":
-      "#Viewport > div.default > div:nth-child(3) div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > span > span:nth-child(2)",
-    "feature:altname": "#Viewport div:nth-child(1) > span > span:nth-child(2)",
+      "#Viewport > div.default > [role$=\"heading\"] > div:nth-child(2) > span",
+    "feature:altname": "#Viewport div:nth-child(1) > span:nth-of-type(2) > span:nth-child(2)",
     "feature:desc:name":
       "#Viewport > div.default > div:nth-child(3) div:nth-child(1) > div:nth-child(2) > div:nth-child(4) > span > span",
     "feature:desc:altname": "#Viewport div:nth-child(4) > span > span",
@@ -67,6 +67,36 @@ function nodeSelector(
   );
 }
 
+/**
+ * Video Web View Heading Finder
+ * @param {string} selectorQuery HTMLElement selector
+ * @param {string} fontFamily Font family
+ * @param {string} fontSize Font size
+ * @returns The first filtered element or none
+ */
+ function findMatchInSelector(
+  selectorQuery: string,
+  fontFamilyMatch: string,
+  fontSizeMatch: string
+): HTMLElement {
+  const arr: HTMLElement[] = Array.prototype.slice.call(
+    document.querySelectorAll(selectorQuery)
+  );
+  return arr.find(
+    (node) =>
+      node?.tagName.toLowerCase() === "span" &&
+      (node?.style.fontFamily.length === 0
+        ? node?.parentElement.style.fontFamily
+        : node?.style.fontFamily) === fontFamilyMatch &&
+      (node?.style.fontSize.length === 0
+        ? node?.parentElement.style.fontSize
+        : node?.style.fontSize) === fontSizeMatch &&
+      (node?.style.fontFamily.length === 0 && node?.style.fontSize.length === 0
+        ? true
+        : node?.hasChildNodes() && node?.childNodes[0].nodeType === 3)
+  );
+}
+
 setInterval(async function () {
   if (document.readyState !== "complete") return;
 
@@ -114,9 +144,9 @@ setInterval(async function () {
             ?.textContent ||
           undefined;
         const epname =
-          nodeSelector(selectors["episode:name"], "street2_medium", "28px")
+          nodeSelector(selectors["episode:name"], "street2_medium", "24px")
             ?.textContent ||
-          nodeSelector(selectors["episode:altname"], "street2_medium", "28px")
+          nodeSelector(selectors["episode:altname"], "street2_medium", "24px")
             ?.textContent ||
           undefined;
 
@@ -161,11 +191,12 @@ setInterval(async function () {
             "14px"
           )?.textContent;
 
+          console.log(findMatchInSelector(selectors["feature:name"], "street2_medium", "24px"))
         Object.assign(data, {
           details:
-            nodeSelector(selectors["feature:name"], "street2_medium", "28px")
+            findMatchInSelector(selectors["feature:name"], "street2_medium", "24px")
               ?.textContent ||
-            nodeSelector(selectors["feature:altname"], "street2_medium", "28px")
+            findMatchInSelector(selectors["feature:altname"], "street2_medium", "24px")
               ?.textContent ||
             undefined,
           state: `${
